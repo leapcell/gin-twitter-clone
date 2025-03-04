@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitter Clone</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            --color-clifford: #111827;
+        }
+    </style>
+</head>
+
+<body class="bg-[#21283c] my-auto mx-auto">
+    <div class="container w-3/5 mx-auto border border-gray-600 h-auto  border-t-0">
+        <div class="flex">
+            <div class="flex-1 m-2">
+                <h2 class="px-4 py-2 text-xl font-semibold text-white">Home</h2>
+            </div>
+        </div>
+
+        <hr class="border-gray-600">
+        <form action="/new" method="post">
+            <div class="flex">
+                <div class="m-2 w-10 py-1">
+                    <img class="inline-block h-10 w-10 rounded-full" src="https://leapcell.io/logo.png" alt="">
+                </div>
+                <div class="flex-1 px-2 pt-2 mt-2">
+                    <textarea class=" bg-transparent text-gray-400 font-medium text-lg w-full" rows="2" cols="50"
+                        id="content" name="content" required placeholder="What's happening?"></textarea>
+                </div>
+            </div>
+            <div class="flex mb-5">
+                <div class="flex-1">
+                    <button
+                        class="bg-blue-400 mt-5 hover:bg-blue-600 text-white font-bold py-2 px-8 rounded-full mr-8 float-right cursor-pointer"
+                        type="submit">
+                        Tweet
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <hr class="border-blue-800 border-4">
+
+        <div>
+        </div>
+
+        {{range .Twitters}}
+        <div class="flex flex-shrink-0 p-4 pb-0">
+            <a class="flex-shrink-0 group block" target="_blank">
+                <div class="flex items-center">
+                    <div>
+                        <img class="inline-block h-10 w-10 rounded-full" src="https://leapcell.io/logo.png" alt="">
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-base leading-6 font-medium text-white">
+                            Leapcell
+                            <span
+                                class="text-sm leading-5 font-medium text-gray-400 group-hover:text-gray-300 transition ease-in-out duration-150">
+                                @leapcellhq . {{.CreatedAt.Format "2006-01-02 15:04:05"}}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="pl-16">
+            <p class="text-base width-auto font-medium text-white flex-shrink">
+                {{.Content}}
+            </p>
+
+            <div class="flex">
+                <div class="w-full">
+                    <div class="flex items-center">
+                        <div class="flex-1 text-center">
+                            <a class="w-12 mt-1 group flex items-center text-gray-500 px-3 py-2 text-base leading-6 font-medium rounded-full hover:bg-blue-800 hover:text-blue-300"
+                                target="_blank">
+                                <svg class="text-center h-6 w-6" fill="none" stroke-linecap="round"
+                                    stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24"
+                                    data-darkreader-inline-stroke="" style="--darkreader-inline-stroke: currentColor;">
+                                    <path
+                                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+                                    </path>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{end}}
+        <hr class="border-gray-600">
+</body>
+
+</html>
