@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -76,22 +77,38 @@ func renderTemplate(c *gin.Context, tmplPath string, data interface{}) {
 	}
 }
 
-func main() {
+// getDB connects to the PostgreSQL database.
+func getDB() *sql.DB {
+	// Get database DSN from environment variable
+	dsn := os.Getenv("PG_DSN")
+	if dsn == "" {
+		fmt.Println("Please set the PG_DSN environment variable.")
+		return nil
+	}
 
-	// Get the DSN from environment variable
-	dsn := os.Getenv("DSN")
+	// Ensure sslmode is set in DSN
+	if !strings.Contains(dsn, "sslmode") {
+		fmt.Println("Please set the sslmode parameter in the PG_DSN environment variable.")
+		dsn += "?sslmode=disable"
+	}
 
-	// Connect to the database using DSN
+	// Open a database connection
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Error opening the database: %v, please check the connection details.\n", err)
+		return nil
 	}
-	defer db.Close()
 
-	// Create tables if they don't exist
-	if err := createTables(db); err != nil {
-		log.Fatal(err)
+	// Ping the database to test the connection
+	if err := db.Ping(); err != nil {
+		fmt.Printf("Error pinging the database: %v, please check the connection details.\n", err)
+		return nil
 	}
+
+	return db
+}
+
+func main() {
 
 	// Set up Gin router
 	r := gin.Default()
@@ -102,6 +119,19 @@ func main() {
 	// Define routes
 	// Route to display the list of twitters
 	r.GET("/", func(c *gin.Context) {
+
+		// Get a database connection
+		db := getDB()
+		if db == nil {
+			renderTemplate(c, "templates/pg-missing.html", map[string]interface{}{})
+			return
+		}
+
+		// Create tables if they don't exist
+		if err := createTables(db); err != nil {
+			log.Fatal(err)
+		}
+
 		// SQL query to select all twitters ordered by creation time in descending order
 		rows, err := db.Query("SELECT id, content, created_at FROM twitters ORDER BY created_at DESC")
 		if err != nil {
@@ -137,6 +167,14 @@ func main() {
 	// Route to add a new twitter
 	r.POST("/new", func(c *gin.Context) {
 		content := c.PostForm("content")
+
+		// Get a database connection
+		db := getDB()
+		if db == nil {
+			c.Redirect(http.StatusFound, "/")
+			return
+		}
+
 		// SQL query to insert a new twitter into the 'twitters' table
 		if _, err := db.Exec("INSERT INTO twitters (content, created_at) VALUES ($1, CURRENT_TIMESTAMP)", content); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
